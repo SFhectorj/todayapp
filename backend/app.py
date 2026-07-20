@@ -9,9 +9,75 @@ from anthropic import Anthropic
 # Import the Google Calendar service
 from gcal_service import create_calendar_events
 
+# Import the database functions
+from database import (
+    DEMO_USER_ID,
+    init_db,
+    get_user,
+    update_user,
+    save_schedule,
+    get_schedules,
+    get_latest_schedule,
+)
+
 app = Flask(__name__)
 
+# Create the database tables when the backend starts
+init_db()
+
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+
+@app.route('/api/profile', methods=['GET'])
+def profile():
+    user = get_user()
+
+    if not user:
+        return jsonify({"error": "User profile not found."}), 404
+
+    return jsonify(user)
+
+
+@app.route('/api/profile', methods=['PUT'])
+def save_profile():
+    profile_data = request.get_json(silent=True)
+
+    if not profile_data:
+        return jsonify({"error": "Profile information is required."}), 400
+
+    user = update_user(profile_data)
+
+    if not user:
+        return jsonify({"error": "User profile not found."}), 404
+
+    return jsonify({
+        "success": True,
+        "user": user
+    })
+
+
+@app.route('/api/schedules', methods=['GET'])
+def schedule_history():
+    schedules = get_schedules()
+
+    return jsonify({
+        "success": True,
+        "schedules": schedules
+    })
+
+
+@app.route('/api/schedules/latest', methods=['GET'])
+def latest_schedule():
+    schedule = get_latest_schedule()
+
+    if not schedule:
+        return jsonify({"error": "No saved schedules found."}), 404
+
+    return jsonify({
+        "success": True,
+        "schedule": schedule
+    })
+
 
 @app.route('/api/plan-my-day', methods=['POST'])
 def plan_my_day():
@@ -19,19 +85,34 @@ def plan_my_day():
         # Extract data sent by React (TBD)
         user_vibe = request.form.get('vibe', 'Feeling okay')
         access_token = request.form.get('googleAccessToken')
-        
-        # Hardcoded dummy profile (TESTING ONLY)
-        major = "Computer Science"
-        job = "Works at coffee shop 4pm - 8pm"
+
+        # Load the student profile from the database
+        profile_data = get_user()
+
+        if profile_data:
+            major = profile_data.get("major") or "Computer Science"
+            job = (
+                profile_data.get("current_job")
+                or "Works at coffee shop 4pm - 8pm"
+            )
+        else:
+            major = "Computer Science"
+            job = "Works at coffee shop 4pm - 8pm"
+
         goals = "Reduce screen time, manage anxiety"
 
         # Handle the PDF File
         if 'syllabusPdf' not in request.files:
-            return jsonify({"error": "Please upload a valid PDF syllabus."}), 400
-        
+            return jsonify({
+                "error": "Please upload a valid PDF syllabus."
+            }), 400
+
         file = request.files['syllabusPdf']
+
         if file.filename == '' or not file.filename.lower().endswith('.pdf'):
-            return jsonify({"error": "Please upload a valid PDF syllabus."}), 400
+            return jsonify({
+                "error": "Please upload a valid PDF syllabus."
+            }), 400
 
         # Read the file into memory and convert to Base64 string for Claude
         pdf_bytes = file.read()
@@ -39,7 +120,7 @@ def plan_my_day():
 
         # Construct the dynamic System Prompt for Claude
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-        
+
         system_prompt = f"""
         You are an empathetic, highly organized student scheduling assistant and wellness coach.
         You are creating a schedule for TODAY: {today_str}.
@@ -95,7 +176,7 @@ def plan_my_day():
 
         # Parse Claude's JSON response
         ai_response_text = response.content[0].text
-        
+
         # Strip markdown code blocks if Claude includes them
         cleaned_text = re.sub(r'^```json\s*', '', ai_response_text)
         cleaned_text = re.sub(r'^```\s*', '', cleaned_text)
@@ -103,10 +184,25 @@ def plan_my_day():
 
         schedule_data = json.loads(cleaned_text)
 
+        # Save the generated schedule in the database
+        try:
+            save_schedule(
+                DEMO_USER_ID,
+                user_vibe,
+                today_str,
+                schedule_data
+            )
+        except Exception as database_error:
+            print(f"Database Error: {database_error}")
+
         # Create Google Calendar Events
         calendar_results = None
+
         if access_token:
-            calendar_results = create_calendar_events(access_token, schedule_data)
+            calendar_results = create_calendar_events(
+                access_token,
+                schedule_data
+            )
 
         # Send everything back to React
         return jsonify({
@@ -117,10 +213,16 @@ def plan_my_day():
 
     except json.JSONDecodeError as e:
         print(f"Claude returned invalid JSON: {ai_response_text}")
-        return jsonify({"error": f"Failed to parse AI schedule format: {str(e)}"}), 500
+        return jsonify({
+            "error": f"Failed to parse AI schedule format: {str(e)}"
+        }), 500
+
     except Exception as e:
         print(f"Server Error: {e}")
-        return jsonify({"error": "An unexpected error occurred."}), 500
+        return jsonify({
+            "error": "An unexpected error occurred."
+        }), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
