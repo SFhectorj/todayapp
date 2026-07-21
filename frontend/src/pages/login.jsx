@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useGoogleLogin } from '@react-oauth/google'
 import './login.css'
 
@@ -8,6 +8,132 @@ function LoginPage({ onBack, onLoginSuccess, onSignUp }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    let animationId
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    // Sun class
+    class Sun {
+      constructor() {
+        this.x = canvas.width * 0.15
+        this.y = canvas.height * 0.12
+        this.radius = 60
+        this.pulse = 0
+      }
+
+      draw(ctx) {
+        this.pulse += 0.01
+        
+        // Glow
+        const gradient = ctx.createRadialGradient(
+          this.x, this.y, 0,
+          this.x, this.y, this.radius * 4
+        )
+        gradient.addColorStop(0, 'rgba(255, 200, 50, 0.4)')
+        gradient.addColorStop(0.3, 'rgba(255, 180, 50, 0.2)')
+        gradient.addColorStop(1, 'rgba(255, 180, 50, 0)')
+        ctx.fillStyle = gradient
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.radius * 4, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Sun body
+        const pulseRadius = this.radius + Math.sin(this.pulse) * 3
+        ctx.shadowColor = 'rgba(255, 200, 50, 0.5)'
+        ctx.shadowBlur = 40
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, pulseRadius, 0, Math.PI * 2)
+        ctx.fillStyle = '#FFD93D'
+        ctx.fill()
+        ctx.shadowBlur = 0
+
+        // Sun rays
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2 + this.pulse * 0.1
+          const rayLength = this.radius * 1.6 + Math.sin(this.pulse + i) * 5
+          ctx.beginPath()
+          ctx.moveTo(
+            this.x + Math.cos(angle) * this.radius * 0.9,
+            this.y + Math.sin(angle) * this.radius * 0.9
+          )
+          ctx.lineTo(
+            this.x + Math.cos(angle) * rayLength,
+            this.y + Math.sin(angle) * rayLength
+          )
+          ctx.strokeStyle = 'rgba(255, 200, 50, 0.6)'
+          ctx.lineWidth = 3
+          ctx.stroke()
+        }
+
+        // Inner highlight
+        ctx.beginPath()
+        ctx.arc(this.x - this.radius * 0.2, this.y - this.radius * 0.2, this.radius * 0.3, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+        ctx.fill()
+      }
+    }
+
+    const sun = new Sun()
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Draw sky gradient
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      skyGradient.addColorStop(0, '#87CEEB')
+      skyGradient.addColorStop(0.3, '#B5E8F7')
+      skyGradient.addColorStop(0.6, '#D4F1F9')
+      skyGradient.addColorStop(1, '#E8F8FF')
+      ctx.fillStyle = skyGradient
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw sun
+      sun.draw(ctx)
+
+      // Draw clouds (fluffy white clouds)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+      const cloudPositions = [
+        { x: canvas.width * 0.3, y: canvas.height * 0.08, size: 1 },
+        { x: canvas.width * 0.5, y: canvas.height * 0.15, size: 0.8 },
+        { x: canvas.width * 0.7, y: canvas.height * 0.05, size: 1.2 },
+        { x: canvas.width * 0.85, y: canvas.height * 0.12, size: 0.7 },
+        { x: canvas.width * 0.1, y: canvas.height * 0.2, size: 0.6 },
+      ]
+
+      cloudPositions.forEach((cloud, index) => {
+        const offsetX = (index * 20 + Date.now() * 0.005) % 100 - 50
+        const x = cloud.x + offsetX
+        const y = cloud.y
+        const size = cloud.size * 40
+
+        ctx.beginPath()
+        ctx.arc(x, y, size, 0, Math.PI * 2)
+        ctx.arc(x + size * 0.8, y - size * 0.3, size * 0.7, 0, Math.PI * 2)
+        ctx.arc(x + size * 1.4, y, size * 0.6, 0, Math.PI * 2)
+        ctx.arc(x + size * 0.6, y + size * 0.2, size * 0.5, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+      cancelAnimationFrame(animationId)
+    }
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -74,6 +200,7 @@ function LoginPage({ onBack, onLoginSuccess, onSignUp }) {
 
   return (
     <section id="login">
+      <canvas ref={canvasRef} className="canvas"></canvas>
       <div className="login-card">
         <button onClick={onBack} className="back-button-home">
           ← Back to Home
