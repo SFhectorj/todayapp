@@ -4,12 +4,17 @@ import json
 import datetime
 import re
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from anthropic import Anthropic
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Import the Google Calendar service
 from gcal_service import create_calendar_events
 
 app = Flask(__name__)
+CORS(app)
 
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
