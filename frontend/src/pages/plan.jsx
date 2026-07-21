@@ -78,7 +78,7 @@ function PlanPage({ onBack, onProfileClick, user, onScheduleCreated }) {
     }
   };
 
-  const handlePlanSubmit = async (e) => {
+const handlePlanSubmit = async (e) => {
     e.preventDefault();
     
     if (!selectedFile) {
@@ -96,15 +96,11 @@ function PlanPage({ onBack, onProfileClick, user, onScheduleCreated }) {
     setSchedule(null);
 
     try {
-      let result;
-      if (user?.accessToken) {
-        result = await createPlan(user.accessToken);
-      } else if (user?.googleId) {
-        googleLogin();
-        return;
-      } else {
-        result = await createPlan(null);
-      }
+      // Look for the token inside the user object. 
+      // If it doesn't exist, pass null.
+      const tokenToUse = user ? user.accessToken : null; 
+      
+      const result = await createPlan(tokenToUse);
 
       if (result && result.schedule && onScheduleCreated) {
         onScheduleCreated(result.schedule);

@@ -19,7 +19,7 @@ function App() {
   if (currentPage === 'login') {
     return <LoginPage
       onBack={() => setCurrentPage('home')}
-      onLoginSuccess={() => setCurrentPage('plan')}
+      onLoginSuccess={handleLoginSuccess}  // Changed
       onSignUp={() => setCurrentPage('profile')}
     />
   }
