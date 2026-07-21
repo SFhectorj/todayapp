@@ -28,7 +28,7 @@
 .back-button {
   background: none;
   border: none;
-  color: #4c32bf;
+  color: #9cb2e7;
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
@@ -88,7 +88,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #444eb8;
+  border-color: #92c8e7;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
@@ -145,7 +145,7 @@
 }
 
 .submit-button {
-  background: #332c9e;
+  background: #9dbae4;
   color: white;
 }
 
@@ -160,26 +160,5 @@
 .submit-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-@media (max-width: 640px) {
-  .user-card {
-    padding: 28px 20px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .submit-button,
-  .reset-button {
-    width: 100%;
-    padding: 14px;
-  }
 }
 
