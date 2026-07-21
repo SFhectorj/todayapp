@@ -18,7 +18,7 @@ app = Flask(__name__)
 # FIX: Allows exactVercel URL to safely make requests
 allowed_origins = [
     "http://localhost:5173",           # Local development
-    "https://todayapp.vercel.app"      # Production frontend
+    "https://todayapp-lime.vercel.app"      # Production frontend
 ]
 
 CORS(
