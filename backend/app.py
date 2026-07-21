@@ -15,16 +15,10 @@ from gcal_service import create_calendar_events
 
 app = Flask(__name__)
 # FIX: Allows exactVercel URL to safely make requests
-allowed_origins = [
-    "http://localhost:5173",
-    "https://todayapp-lime.vercel.app"
-]
-
-CORS(app, resources={
-    r"/api/*": {
-        "origins": allowed_origins
-    }
-})
+CORS(
+    app,
+    resources={r"/api/*": {"origins": r"https://.*\.vercel\.app"}}
+)
 
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
