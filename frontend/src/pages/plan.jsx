@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import './plan.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function PlanPage({ onBack, onProfileClick, user, onScheduleCreated }) {
   const [vibe, setVibe] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -39,7 +41,7 @@ function PlanPage({ onBack, onProfileClick, user, onScheduleCreated }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/plan-my-day', {
+      const response = await fetch(`${API_URL}/api/plan-my-day`, {
         method: 'POST',
         body: formData,
       });
