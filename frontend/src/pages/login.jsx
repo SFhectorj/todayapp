@@ -90,7 +90,7 @@ function LoginPage({ onBack, onLoginSuccess, onSignUp }) {
             alt="Google" 
             className="google-icon"
           />
-          {isLoading ? 'Signing in...' : 'Log in with Google'}
+          {isLoading ? 'Signing in...' : 'Login with Google'}
         </button>
 
         <div className="divider">
@@ -131,7 +131,7 @@ function LoginPage({ onBack, onLoginSuccess, onSignUp }) {
           {error && <p className="error">{error}</p>}
 
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Log In'}
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 

@@ -190,28 +190,76 @@ body {
   color: var(--ink);
 }
 
-@media (max-width: 640px) {
-  .navbar {
-    padding: 20px 24px;
-  }
 
-  .hero-section {
-    padding: 70px 24px 80px;
-  }
+.growing-decor {
+  position: fixed;
+  bottom: 0;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 5;
+}
 
-  .features-section {
-    padding: 30px 24px 70px;
-  }
+.growing-decor-left {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
 
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center;
+.growing-decor-right {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.growing-leaf {
+  transform-origin: bottom center;
+  animation: leaf-grow 0.9s ease-out both;
+}
+
+.leaf-1 { animation-delay: 0.1s; }
+.leaf-2 { animation-delay: 0.3s; }
+.leaf-3 { animation-delay: 0.5s; }
+.leaf-4 { animation-delay: 0.7s; }
+.leaf-5 { animation-delay: 0.2s; }
+.leaf-6 { animation-delay: 0.4s; }
+.leaf-7 { animation-delay: 0.6s; }
+.leaf-8 { animation-delay: 0.7s; }
+
+.leaf-stem-svg {
+  display: block;
+  filter: drop-shadow(2px 3px 0 rgba(43, 27, 20, 0.12));
+}
+
+.bee-on-leaf {
+  animation: bee-hover 2.6s ease-in-out infinite;
+  animation-delay: 1s;
+  transform-origin: 70px 42px;
+}
+
+@keyframes leaf-grow {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-btn,
-  .feature-card {
-    transition: none;
+@keyframes bee-hover {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(3px, -4px) rotate(4deg);
   }
 }
