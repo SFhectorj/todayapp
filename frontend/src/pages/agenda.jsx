@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import './agenda.css'
 
-const START_HOUR = 6   
-const END_HOUR = 23     
+const START_HOUR = 6
+const END_HOUR = 23
+const HOUR_HEIGHT = 90 
+const SHORT_EVENT_MINUTES = 30
 const HOURS = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i)
 
 function formatHourLabel(hour) {
@@ -24,6 +26,48 @@ function formatTimeDisplay(isoString) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
+
+function layoutEvents(events) {
+  const sorted = [...events].sort((a, b) => a.start - b.start || a.end - b.end)
+
+  const clusters = []
+  let currentCluster = []
+  let clusterEnd = -Infinity
+
+  for (const evt of sorted) {
+    if (currentCluster.length === 0 || evt.start < clusterEnd) {
+      currentCluster.push(evt)
+      clusterEnd = Math.max(clusterEnd, evt.end)
+    } else {
+      clusters.push(currentCluster)
+      currentCluster = [evt]
+      clusterEnd = evt.end
+    }
+  }
+  if (currentCluster.length) clusters.push(currentCluster)
+
+  const laidOut = []
+
+  for (const cluster of clusters) {
+    const columns = [] 
+    const withColumns = cluster.map((evt) => {
+      let colIndex = columns.findIndex((endTime) => endTime <= evt.start)
+      if (colIndex === -1) {
+        colIndex = columns.length
+        columns.push(evt.end)
+      } else {
+        columns[colIndex] = evt.end
+      }
+      return { ...evt, column: colIndex }
+    })
+
+    const columnCount = columns.length
+    withColumns.forEach((evt) => laidOut.push({ ...evt, columnCount }))
+  }
+
+  return laidOut
+}
+
 function AgendaPage({ onBack, schedule, user }) {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const dayStart = START_HOUR
@@ -33,12 +77,11 @@ function AgendaPage({ onBack, schedule, user }) {
 
   const hasSchedule = schedule && Array.isArray(schedule) && schedule.length > 0
 
-  const events = hasSchedule 
+  const events = hasSchedule
     ? schedule.map((item, index) => {
         const startHour = getHourFromISO(item.startTime)
         const endHour = getHourFromISO(item.endTime)
-        
-        // Determine event type based on title
+        const durationMinutes = (endHour - startHour) * 60
         let type = 'focus'
         const titleLower = item.title.toLowerCase()
         if (titleLower.includes('break') || titleLower.includes('rest') || titleLower.includes('lunch')) {
@@ -48,13 +91,18 @@ function AgendaPage({ onBack, schedule, user }) {
         } else if (titleLower.includes('exercise') || titleLower.includes('gym') || titleLower.includes('walk')) {
           type = 'break'
         }
-        
+
+        const titleLength = item.title.length
+
         return {
           id: index + 1,
           title: item.title,
           start: startHour,
           end: endHour,
           type: type,
+          isShort: durationMinutes < SHORT_EVENT_MINUTES,
+          titleSizeClass:
+            titleLength > 70 ? 'title-xs' : titleLength > 45 ? 'title-sm' : '',
           healthTip: item.healthTip || null,
           startTime: item.startTime,
           endTime: item.endTime,
@@ -80,7 +128,7 @@ function AgendaPage({ onBack, schedule, user }) {
           </div>
         </header>
         <div className="empty-state">
-          <p>Go back to the Plan page and create your schedule</p>
+          <p>📋 Go back to the Plan page and create your schedule</p>
         </div>
       </div>
     )
@@ -102,8 +150,9 @@ function AgendaPage({ onBack, schedule, user }) {
       <div className="agenda-grid-wrapper">
         <div
           className="agenda-grid"
-          style={{ '--total-hours': totalHours }}
+          style={{ '--total-hours': totalHours, '--hour-height': `${HOUR_HEIGHT}px` }}
         >
+
           <div className="time-column">
             {HOURS.map((hour) => (
               <div key={hour} className="time-slot">
@@ -117,16 +166,37 @@ function AgendaPage({ onBack, schedule, user }) {
               <div key={hour} className="hour-row" />
             ))}
 
-            {events
-              .filter((evt) => evt.start >= dayStart && evt.start <= END_HOUR + 1)
-              .map((evt) => {
-                const top = (evt.start - dayStart) * 60
-                const height = Math.max((evt.end - evt.start) * 60, 28)
+            {layoutEvents(
+              events.filter((evt) => evt.start >= dayStart && evt.start <= END_HOUR + 1)
+            ).map((evt) => {
+                const top = (evt.start - dayStart) * HOUR_HEIGHT
+                const height = Math.max((evt.end - evt.start) * HOUR_HEIGHT - 4, 30)
+
+
+                const columnGapPx = 6
+                const widthPercent = 100 / evt.columnCount
+                const leftPercent = widthPercent * evt.column
+
+                const positionStyle =
+                  evt.columnCount > 1
+                    ? {
+                        top: `${top}px`,
+                        height: `${height}px`,
+                        left: `calc(${leftPercent}% + ${evt.column === 0 ? 10 : columnGapPx / 2}px)`,
+                        right: 'auto',
+                        width: `calc(${widthPercent}% - ${
+                          evt.column === 0 || evt.column === evt.columnCount - 1
+                            ? 10 + columnGapPx / 2
+                            : columnGapPx
+                        }px)`
+                      }
+                    : { top: `${top}px`, height: `${height}px` }
+
                 return (
                   <button
                     key={evt.id}
-                    className={`agenda-event event-${evt.type}`}
-                    style={{ top: `${top}px`, height: `${height}px` }}
+                    className={`agenda-event event-${evt.type} ${evt.isShort ? 'event-short' : ''} ${evt.titleSizeClass} ${evt.columnCount > 1 ? 'event-overlapping' : ''}`}
+                    style={positionStyle}
                     onClick={() => setSelectedEvent(evt)}
                   >
                     <span className="event-title">{evt.title}</span>

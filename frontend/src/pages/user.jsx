@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './user.css'
 
-function UserPage({ onBack, }) {
+function UserPage({ onBack, onComplete }) {
   const [profile, setProfile] = useState({
     firstName: '',
     lastName: '',
@@ -68,6 +68,10 @@ function UserPage({ onBack, }) {
       console.log('Student profile data submitted:', profile)
       setIsSubmitting(false)
       setSuccess(true)
+
+      if (onComplete) {
+        onComplete(profile)
+      }
 
       setTimeout(() => {
         setSuccess(false)

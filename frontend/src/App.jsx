@@ -47,7 +47,7 @@ function App() {
     return (
       <UserPage
         onBack={handleBackToHome}
-        onComplete={handleBackToHome}
+        onComplete={handleBackToPlan}
       />
     )
   }
@@ -158,7 +158,7 @@ function App() {
         <div className="hero-content">
           <h1>Today</h1>
           <p className="hero-subtitle">
-          Our mission is to prove that high achievement doesn't have to come at the cost of well-being. We help students navigate overwhelming coursework and packed schedules by generating personalized, stress-free daily plans
+          Our mission is to prove that high achievement doesn't have to come at the cost of well-being. We help students navigate overwhelming coursework and packed schedules by generating personalized, stress-free daily plans.
           </p>
           <div className="hero-buttons">
             <button 
