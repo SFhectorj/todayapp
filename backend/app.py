@@ -41,8 +41,8 @@ def plan_my_day():
         
         # Hardcoded dummy profile (TESTING ONLY)
         major = "Computer Science"
-        job = "Works at coffee shop 4pm - 8pm"
-        goals = "Reduce screen time, manage anxiety"
+        job = "Works at local cafe 4pm - 8pm and is a part of band at school as an extra-curricular"
+        goals = "Improve mental health to avoid burn-out"
 
         # Handle the PDF File
         if 'syllabusPdf' not in request.files:
