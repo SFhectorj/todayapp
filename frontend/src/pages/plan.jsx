@@ -110,7 +110,6 @@ const handlePlanSubmit = async (e) => {
     }
   };
 
-
   const handleVibeSubmit = (e) => {
     e.preventDefault();
     if (vibe.trim()) {
@@ -163,60 +162,61 @@ const handlePlanSubmit = async (e) => {
 
   return (
     <section id="plan-page">
-      <div className="plan-card">
-        <div className="plan-header">
-          <div className="plan-header-left">
-            <button onClick={onBack} className="back-button-plan">
-              Back
-            </button>
-            <h1>My Plan</h1>
-          </div>
-          
-          <div className="plan-header-right">
-            <button 
-              className="profile-nav-btn"
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              aria-label="User menu"
-            >
-              <span className="profile-name">{user?.name || 'User'}</span>
-              <span className="profile-arrow">{showProfileMenu ? '▲' : '▼'}</span>
-            </button>
-            
-            {showProfileMenu && (
-              <div className="profile-dropdown">
-                <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    if (onProfileClick) onProfileClick();
-                  }}
-                >
-                  My Profile
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    console.log('Settings clicked');
-                  }}
-                >
-                  Settings
-                </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    console.log('Logout clicked');
-                    if (onBack) onBack();
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
+      <div className="plan-header">
+        <div className="plan-header-left">
+          <button onClick={onBack} className="back-button-plan">
+            Back
+          </button>
+          <h1>Today</h1>
         </div>
+        
+        <div className="plan-header-right">
+          <span className="my-plan-label">My Plan</span>
+          <button 
+            className="profile-nav-btn"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            aria-label="User menu"
+          >
+            <span className="profile-name">{user?.name || 'User'}</span>
+            <span className="profile-arrow">{showProfileMenu ? '▲' : '▼'}</span>
+          </button>
+          
+          {showProfileMenu && (
+            <div className="profile-dropdown">
+              <button 
+                className="dropdown-item"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  if (onProfileClick) onProfileClick();
+                }}
+              >
+                My Profile
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  console.log('Settings clicked');
+                }}
+              >
+                Settings
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  console.log('Logout clicked');
+                  if (onBack) onBack();
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
+      <div className="plan-card">
         <div className="welcome-section">
           <h2>Welcome {user?.name || 'User'}!</h2>
           {user?.email && <p className="user-email">{user.email}</p>}
@@ -224,6 +224,7 @@ const handlePlanSubmit = async (e) => {
             <div className="google-badge">Connected to Google Calendar</div>
           )}
         </div>
+        
         {error && <div className="error-message">{error}</div>}
 
         {isLoading && (
@@ -232,8 +233,6 @@ const handlePlanSubmit = async (e) => {
             <p>Creating your personalized schedule...</p>
           </div>
         )}
-
-        
 
         <div className="vibe-section">
           <label htmlFor="vibe-input">What is the vibe today?</label>
@@ -291,20 +290,14 @@ const handlePlanSubmit = async (e) => {
           )}
 
           <div className="flower-submit-wrapper">
-            <div className="flower-petals">
-              <div className="flower-petal"></div>
-              <div className="flower-petal"></div>
-              <div className="flower-petal"></div>
-              <div className="flower-petal"></div>
-              <div className="flower-petal"></div>
-              <div className="flower-petal"></div>
-            </div>
             <button
               className="plan-submit-btn"
               onClick={handlePlanSubmit}
               disabled={isLoading || !selectedFile || !vibe.trim()}
             >
-              {isLoading ? 'Planning...' : 'Create my schedule'}
+              <span className="btn-text">
+                {isLoading ? 'Planning...' : 'Create my schedule'}
+              </span>
             </button>
           </div>
         </div>
@@ -317,7 +310,7 @@ const handlePlanSubmit = async (e) => {
                 {calendarStatus.success ? (
                   <p className="calendar-success">Events added to Google Calendar!</p>
                 ) : (
-                  <p className="calendar-error"> Failed to add events: {calendarStatus.error}</p>
+                  <p className="calendar-error">Failed to add events: {calendarStatus.error}</p>
                 )}
               </div>
             )}
@@ -329,7 +322,7 @@ const handlePlanSubmit = async (e) => {
                     {new Date(item.startTime).toLocaleTimeString()} - {new Date(item.endTime).toLocaleTimeString()}
                   </p>
                   {item.healthTip && (
-                    <p className="health-tip"> {item.healthTip}</p>
+                    <p className="health-tip">{item.healthTip}</p>
                   )}
                 </div>
               ))}
